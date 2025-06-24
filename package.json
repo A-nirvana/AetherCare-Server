@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon -r tsconfig-paths/register --exec ts-node ./src/index.ts --files",
-    "build": "echo 'Installing python' && pnpm run install-python && echo 'Node.js build steps here...' && tsc && tsc-alias",
+    "copy-python-code": "cp -R src/python build/",
+    "build": "echo 'Installing python' && pnpm run install-python && echo 'Node.js build steps here...' && tsc && tsc-alias && pnpm run copy-python-code && echo 'Build complete!'",
     "start": "cross-env NODE_ENV=production node ./build/index.js",
     "lint": "eslint ./src/**/*.ts --fix",
     "install-python": "bash ./install_python_deps.sh",
