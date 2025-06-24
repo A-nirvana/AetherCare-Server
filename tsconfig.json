@@ -10,7 +10,7 @@
     "strict": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "types": ["node", "jest"],
+    "types": ["node"],
     "plugins": [
       {
         "transform": "typescript-transform-paths"
