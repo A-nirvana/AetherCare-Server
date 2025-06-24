@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon -r tsconfig-paths/register --exec ts-node ./src/index.ts --files",
     "build": "echo 'Installing python' && pnpm run install-python && echo 'Node.js build steps here...' tsc && tsc-alias",
-    "start": "cross-env NODE_ENV=production node ./build/src/index.js",
+    "start": "cross-env NODE_ENV=production node ./build/index.js",
     "lint": "eslint ./src/**/*.ts --fix",
     "install-python": "bash ./install_python_deps.sh",
     "format": "prettier --write ./**/*.{ts,json}",
