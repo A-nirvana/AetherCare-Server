@@ -2,15 +2,16 @@
 
 set -e
 
+PYTHON_PROJECT_DIR="$(dirname "$0")"
 
-PYTHON_PROJECT_DIR="." 
-VENV_DIR="<span class="math-inline">\{PYTHON\_PROJECT\_DIR\}/venv"
-REQUIREMENTS\_FILE\="</span>{PYTHON_PROJECT_DIR}/requirements.txt"
+VENV_DIR="${PYTHON_PROJECT_DIR}/venv"
+REQUIREMENTS_FILE="${PYTHON_PROJECT_DIR}/requirements.txt"
 
 echo "--- Python Dependency Installation Script ---"
 echo "Python Project Directory: ${PYTHON_PROJECT_DIR}"
 echo "Virtual Environment Directory: ${VENV_DIR}"
-echo "Requirements File: <span class="math-inline">\{REQUIREMENTS\_FILE\}"
+echo "Requirements File: ${REQUIREMENTS_FILE}"
+
 \# 1\. Check if Python is installed
 if \! command \-v python3 &\> /dev/null
 then
