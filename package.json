@@ -1,0 +1,52 @@
+{
+  "name": "aethercare-api",
+  "description": "",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon -r tsconfig-paths/register --exec ts-node ./src/index.ts --files",
+    "build": "echo 'Installing python' && pnpm run install-python && echo 'Node.js build steps here...' tsc && tsc-alias",
+    "start": "cross-env NODE_ENV=production node ./build/src/index.js",
+    "lint": "eslint ./src/**/*.ts --fix",
+    "install-python": "bash ./install_python_deps.sh",
+    "format": "prettier --write ./**/*.{ts,json}",
+    "test": "jest --coverage=true -w=1 --forceExit --detectOpenHandles --watchAll=false --testPathPattern=src/__tests__ --testPathIgnorePatterns=build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.10.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "2.8.5",
+    "cross-env": "7.0.3",
+    "dotenv": "16.5.0",
+    "express": "5.1.0",
+    "firebase-admin": "^13.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^4.1.0",
+    "socket.io": "^4.8.1",
+    "twilio": "^5.7.1"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "2.8.17",
+    "@types/express": "5.0.1",
+    "@types/jest": "29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "24.0.4",
+    "@typescript-eslint/eslint-plugin": "8.29.1",
+    "@typescript-eslint/parser": "8.29.1",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-jest": "28.11.0",
+    "eslint-plugin-prettier": "5.2.6",
+    "nodemon": "3.1.9",
+    "prettier": "3.5.3",
+    "ts-node": "10.9.2",
+    "tsc-alias": "1.8.15",
+    "tsconfig-paths": "4.2.0",
+    "typescript": "5.8.3",
+    "typescript-transform-paths": "3.5.5"
+  }
+}
