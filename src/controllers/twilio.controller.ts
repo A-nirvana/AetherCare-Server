@@ -54,20 +54,15 @@ export const notifyMedicalStaff = async (payload: StaffNotificationPayload) => {
   }
 
   // Construct the SMS message for the medical staff
-  const staffMessage = `
-    New Health Alert:
-    Patient: ${patientName}
-    Contact: ${patientPhoneNumber}
-    Alert Type: ${alertDetails.Alert}
-    Description: ${alertDetails.descp}
-    Check messages for location
-  `;
+  const staffMessage = `New Health Alert. Patient: ${patientName}. Contact: ${patientPhoneNumber}. Alert Type: ${alertDetails.Alert}. Description: ${alertDetails.descp}. Check messages for location`;
 
   // console.log('message: ', staffMessage);
+  const alertMsg = new VoiceResponse();
+  alertMsg.say({ voice: 'Polly.Amy' }, staffMessage);
 
   try {
     const call = await medicTwilioClient.calls.create({
-      twiml: staffMessage.trim(),
+      twiml: alertMsg.toString(),
       to: staffPhoneNumber,
       from: medicPhoneNumber || '',
     });
