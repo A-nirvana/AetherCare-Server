@@ -19,6 +19,9 @@ function login(req: Request, res: Response): void {
 
   // For testing: check if user exists and password matches the test password
   const user = usersModel.getUsers().find((u: any) => u.userId === userId);
+  console.log('User:', user);
+  console.log('Password:', password);
+  console.log('Test Password:', TEST_PASSWORD);
   if (!user || password !== TEST_PASSWORD) {
     res.status(401).json({ error: 'Invalid credentials' });
     return;
