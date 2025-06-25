@@ -146,7 +146,7 @@ const scheduledPredictionTask = async () => {
         item.data.BPM,
         item.data.Respiratory_Rate,
         item.data.SpO2,
-        item.data.DHT_Temp,
+        item.data.Temperature,
       ]);
 
       const predictionResult = await executePrediction(vitalsInput);

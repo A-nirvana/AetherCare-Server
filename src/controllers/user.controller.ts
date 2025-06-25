@@ -34,14 +34,13 @@ function login(req: Request, res: Response): void {
 }
 
 function medicLogin(req: Request, res: Response): void {
-  const { userId, password } = req.body;
-  if (!userId || !password) {
+  const { medicId, password } = req.body;
+  if (!medicId || !password) {
     res.status(400).json({ error: 'Username and password required' });
     return;
   }
 
-  // For testing: check if user exists and password matches the test password
-  const user = medicModel.getMedics().find((u: any) => u.userId === userId);
+  const user = medicModel.getMedics().find((u: any) => u.medicId === medicId);
   if (!user || password !== TEST_PASSWORD) {
     res.status(401).json({ error: 'Invalid credentials' });
     return;
@@ -59,6 +58,8 @@ function medicLogin(req: Request, res: Response): void {
 function getUser(req: Request, res: Response): void {
   const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
   const userType = req.headers['user-type'] || 'user';
+
+  // console.log('User type:', userType);
 
   if (!token) {
     res.clearCookie('token');
