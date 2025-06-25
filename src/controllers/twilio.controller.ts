@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import VoiceResponse from 'twilio/lib/twiml/VoiceResponse';
 import { twilioClient, twilioPhoneNumber, medicPhoneNumber, medicTwilioClient } from '../config/twilioConfig';
+import { getSensorData } from '@/lib/sensorData';
 
 const BASE_URL = process.env.PUBLIC_WEBHOOK_BASE_URL || 'http://localhost:3000';
 let scoreInfo = 0;
@@ -42,6 +43,9 @@ export interface StaffNotificationPayload {
 */
 export const notifyMedicalStaff = async (payload: StaffNotificationPayload) => {
   const { patientName, patientPhoneNumber, alertDetails, staffPhoneNumber} = payload;
+  console.log('Notifying medical staff with payload:', payload);
+  const sensorData = getSensorData();
+  const lastData = sensorData[sensorData.length-1];
 
   // Basic validation for the staff phone number
   if (!staffPhoneNumber) {
@@ -58,7 +62,10 @@ export const notifyMedicalStaff = async (payload: StaffNotificationPayload) => {
     Alert Type: ${alertDetails.Alert}
     Description: ${alertDetails.descp}
     Details: ${alertDetails.message}
+    Location: ${lastData.data.Latitude},${lastData.data.Longitude} 
   `;
+
+  console.log("message: ",staffMessage)
 
   try {
     const message = await medicTwilioClient.messages.create({
@@ -189,6 +196,8 @@ export const handleUserResponse = async (req: Request, res: Response) => {
       },
       staffPhoneNumber: process.env.MEDIC_PHONE_NUMBER || '',
     };
+
+    console.log(staffNotificationPayload)
 
     try {
       await notifyMedicalStaff(staffNotificationPayload);
