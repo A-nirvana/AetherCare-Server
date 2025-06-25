@@ -41,7 +41,7 @@ export interface StaffNotificationPayload {
  * @param payload - The data required for the staff notification.
 */
 export const notifyMedicalStaff = async (payload: StaffNotificationPayload) => {
-  const { patientName, patientPhoneNumber, alertDetails, staffPhoneNumber, callSid } = payload;
+  const { patientName, patientPhoneNumber, alertDetails, staffPhoneNumber} = payload;
 
   // Basic validation for the staff phone number
   if (!staffPhoneNumber) {
@@ -166,6 +166,18 @@ export const handleUserResponse = async (req: Request, res: Response) => {
   } else if (Digits) {
     responseMessage += `You pressed ${Digits}. That is not a valid option.`;
     console.log(`User ${userPhoneNumber} pressed invalid digit: ${Digits}.`);
+  } else {
+    responseMessage += 'No input was detected.';
+    console.log(`No input detected from ${userPhoneNumber} for alert ${alertId}.`);
+  }
+
+  twimlResponse.say({ voice: 'Polly.Amy' }, responseMessage + ' Thank You.');
+  twimlResponse.hangup();
+
+  res.set('Content-Type', 'text/xml');
+  res.send(twimlResponse.toString());
+
+  if (!userAcknowledged) {  
     const staffNotificationPayload: StaffNotificationPayload = {
       patientName: 'Mr. Ravi Sharma',
       patientPhoneNumber: userPhoneNumber,
@@ -179,22 +191,9 @@ export const handleUserResponse = async (req: Request, res: Response) => {
     };
 
     try {
-      notifyMedicalStaff(staffNotificationPayload);
+      await notifyMedicalStaff(staffNotificationPayload);
     } catch (error) {
       console.error('Failed to notify medical staff:', error);
     }
-  } else {
-    responseMessage += 'No input was detected.';
-    console.log(`No input detected from ${userPhoneNumber} for alert ${alertId}.`);
-  }
-
-  twimlResponse.say({ voice: 'Polly.Amy' }, responseMessage + ' Thank You.');
-  twimlResponse.hangup();
-
-  res.set('Content-Type', 'text/xml');
-  res.send(twimlResponse.toString());
-
-  if (!userAcknowledged) {  
-    console.log(`Alert ${alertId} for ${userPhoneNumber} was not acknowledged by the user.`);
   }
 };
