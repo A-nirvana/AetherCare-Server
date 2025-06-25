@@ -179,7 +179,7 @@ export const handleUserResponse = async (req: Request, res: Response) => {
     };
 
     try {
-      await notifyMedicalStaff(staffNotificationPayload);
+      notifyMedicalStaff(staffNotificationPayload);
     } catch (error) {
       console.error('Failed to notify medical staff:', error);
     }
