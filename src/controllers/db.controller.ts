@@ -67,10 +67,10 @@ export const setupSensorDataListener = () => {
       const accelMagnitude = Math.sqrt(Math.pow(newData.Accel_X, 2) + Math.pow(newData.Accel_Y, 2) + Math.pow(newData.Accel_Z, 2));
       const gyroMagnitude = Math.sqrt(Math.pow(newData.Gyro_X, 2) + Math.pow(newData.Gyro_Y, 2) + Math.pow(newData.Gyro_Z, 2));
 
-      if (accelMagnitude > 25 && gyroMagnitude > 2) {
+      if (accelMagnitude > 250 && gyroMagnitude > 2) {
         io.emit('mlResult', {
           ID: newDataKey,
-          Descp: 'FPossible Fall Detected for mr. Ravi Sharma',
+          Descp: 'Possible Fall Detected for mr. Ravi Sharma',
           Alert: 'Urgent Action Required',
           Score: Math.random() * 5 + 25,
           Message: 'Our system indicates a potential fall has occurred. Please check on Mr. Ravi Sharma immediately.',
