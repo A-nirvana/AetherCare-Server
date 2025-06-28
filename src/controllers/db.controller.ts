@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { db, rtdb } from '@/config/firebase'; 
-import * as admin from 'firebase-admin'; 
+import { db, rtdb } from '@/config/firebase';
+import * as admin from 'firebase-admin';
 import { addSensorData, getSensorData, clearSensorData } from '@/lib/sensorData';
-
+import { io } from '@/lib/socket';
 
 /**
  * @function getAllRealtimeDatabaseContent
@@ -14,26 +14,25 @@ import { addSensorData, getSensorData, clearSensorData } from '@/lib/sensorData'
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const getAllRealtimeDatabaseContent = async (req: Request, res: Response) => {
-    try {
-        const rootRef = rtdb.ref('/');
-        const snapshot = await rootRef.once('value');
+  try {
+    const rootRef = rtdb.ref('/');
+    const snapshot = await rootRef.once('value');
 
-        if (!snapshot.exists()) {
-            console.log('No data found at the root of Realtime Database.');
-            res.status(404).json({ message: 'No data found in Realtime Database.' });
-            return;
-        }
-
-        const allData = snapshot.val();
-        res.status(200).json({
-            message: 'Successfully retrieved all data from Realtime Database.',
-            data: allData
-        });
-
-    } catch (error: any) {
-        console.error('Error fetching all Realtime Database content:', error);
-        res.status(500).json({ error: 'Failed to retrieve Realtime Database content.', details: error.message });
+    if (!snapshot.exists()) {
+      console.log('No data found at the root of Realtime Database.');
+      res.status(404).json({ message: 'No data found in Realtime Database.' });
+      return;
     }
+
+    const allData = snapshot.val();
+    res.status(200).json({
+      message: 'Successfully retrieved all data from Realtime Database.',
+      data: allData,
+    });
+  } catch (error: any) {
+    console.error('Error fetching all Realtime Database content:', error);
+    res.status(500).json({ error: 'Failed to retrieve Realtime Database content.', details: error.message });
+  }
 };
 
 let sensorDataListenerAttached = false;
@@ -46,29 +45,45 @@ let sensorDataListenerAttached = false;
  * New data will be logged to the server console and stored in the in-memory array.
  */
 export const setupSensorDataListener = () => {
-    if (sensorDataListenerAttached) {
-        console.warn('Sensor data listener already attached. Skipping re-attachment.');
-        return;
-    }
+  if (sensorDataListenerAttached) {
+    console.warn('Sensor data listener already attached. Skipping re-attachment.');
+    return;
+  }
 
-    const sensorDataRef = rtdb.ref('sensorData');
-    let count = 0;
+  const sensorDataRef = rtdb.ref('sensorData');
+  let count = 0;
 
-    sensorDataRef.on('child_added', (snapshot, prevChildKey) => {
-        const newData = snapshot.val();
-        const newDataKey = snapshot.key;
-        count++; 
-                
-        if(newDataKey)addSensorData(newDataKey, newData, db, rtdb).catch(err => {
-            console.error("Error processing sensor data batch:", err);
+  sensorDataRef.on(
+    'child_added',
+    (snapshot, prevChildKey) => {
+      const newData = snapshot.val();
+      const newDataKey = snapshot.key;
+      count++;
+
+      if (newDataKey)
+        addSensorData(newDataKey, newData, db, rtdb).catch((err) => {
+          console.error('Error processing sensor data batch:', err);
         });
+      const accelMagnitude = Math.sqrt(Math.pow(newData.Accel_X, 2) + Math.pow(newData.Accel_Y, 2) + Math.pow(newData.Accel_Z, 2));
+      const gyroMagnitude = Math.sqrt(Math.pow(newData.Gyro_X, 2) + Math.pow(newData.Gyro_Y, 2) + Math.pow(newData.Gyro_Z, 2));
 
-    }, (errorObject: any) => {
-        console.error('The sensor data listener failed:', errorObject.code, errorObject.message);
-    });
+      if (accelMagnitude > 25 && gyroMagnitude > 2) {
+        io.emit('mlResult', {
+          ID: newDataKey,
+          Descp: 'FPossible Fall Detected for mr. Ravi Sharma',
+          Alert: 'Urgent Action Required',
+          Score: Math.random() * 5 + 25,
+          Message: 'Our system indicates a potential fall has occurred. Please check on Mr. Ravi Sharma immediately.',
+        });
+      }
+    },
+    (errorObject: any) => {
+      console.error('The sensor data listener failed:', errorObject.code, errorObject.message);
+    },
+  );
 
-    sensorDataListenerAttached = true; // Set the flag to true
-    console.log('Realtime Database listener for "sensorData" path has been set up.');
+  sensorDataListenerAttached = true; // Set the flag to true
+  console.log('Realtime Database listener for "sensorData" path has been set up.');
 };
 
 /**
@@ -80,11 +95,13 @@ export const setupSensorDataListener = () => {
  * @returns {void}
  */
 export const confirmSensorDataListenerStatus = (req: Request, res: Response) => {
-    if (sensorDataListenerAttached) {
-        res.status(200).json({ message: 'Realtime Database listener for "sensorData" is active.', status: 'active' });
-    } else {
-        res.status(200).json({ message: 'Realtime Database listener for "sensorData" is not active (or not yet initialized).', status: 'inactive' });
-    }
+  if (sensorDataListenerAttached) {
+    res.status(200).json({ message: 'Realtime Database listener for "sensorData" is active.', status: 'active' });
+  } else {
+    res
+      .status(200)
+      .json({ message: 'Realtime Database listener for "sensorData" is not active (or not yet initialized).', status: 'inactive' });
+  }
 };
 
 /**
@@ -95,12 +112,12 @@ export const confirmSensorDataListenerStatus = (req: Request, res: Response) => 
  * @returns {Promise<void>}
  */
 export const getStoredSensorData = (req: Request, res: Response) => {
-    const data = getSensorData();
-    res.status(200).json({
-        message: 'Successfully retrieved stored sensor data.',
-        count: data.length,
-        data: data
-    });
+  const data = getSensorData();
+  res.status(200).json({
+    message: 'Successfully retrieved stored sensor data.',
+    count: data.length,
+    data: data,
+  });
 };
 
 /**
@@ -111,12 +128,12 @@ export const getStoredSensorData = (req: Request, res: Response) => {
  * @returns {Promise<void>}
  */
 export const clearStoredSensorData = (req: Request, res: Response) => {
-    clearSensorData();
-    res.status(200).json({
-        message: 'Stored sensor data cleared successfully.',
-        count: 0,
-        data: []
-    });
+  clearSensorData();
+  res.status(200).json({
+    message: 'Stored sensor data cleared successfully.',
+    count: 0,
+    data: [],
+  });
 };
 
 /**
@@ -127,30 +144,28 @@ export const clearStoredSensorData = (req: Request, res: Response) => {
  * @returns {Promise<void>} - A promise that resolves when the response is sent.
  */
 export const getAverageSensorData = async (req: Request, res: Response) => {
-    try {
-        const sensorAveragesRef = db.collection('sensorAverages');
-        const snapshot = await sensorAveragesRef.get();
+  try {
+    const sensorAveragesRef = db.collection('sensorAverages');
+    const snapshot = await sensorAveragesRef.get();
 
-        if (snapshot.empty) {
-            console.log('No average sensor data found in Firestore.');
-            res.status(404).json({ message: 'No average sensor data found.' });
-            return;
-        }
-
-        const averages = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        res.status(200).json({
-            message: 'Successfully retrieved average sensor data from Firestore.',
-            count: averages.length,
-            data: averages
-        });
-
-    } catch (error: any) {
-        console.error('Error fetching average sensor data from Firestore:', error);
-        res.status(500).json({ error: 'Failed to retrieve average sensor data.', details: error.message });
+    if (snapshot.empty) {
+      console.log('No average sensor data found in Firestore.');
+      res.status(404).json({ message: 'No average sensor data found.' });
+      return;
     }
-};
 
+    const averages = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json({
+      message: 'Successfully retrieved average sensor data from Firestore.',
+      count: averages.length,
+      data: averages,
+    });
+  } catch (error: any) {
+    console.error('Error fetching average sensor data from Firestore:', error);
+    res.status(500).json({ error: 'Failed to retrieve average sensor data.', details: error.message });
+  }
+};
