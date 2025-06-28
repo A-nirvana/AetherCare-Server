@@ -169,7 +169,7 @@ export const handleUserResponse = async (req: Request, res: Response) => {
     responseMessage += 'Cancelling emergency services.';
     console.log(`User ${userPhoneNumber} acknowledged alert ${alertId}.`);
   } else if (Digits) {
-    responseMessage += `You pressed ${Digits}. That is not a valid option.`;
+    responseMessage += `Calling emergency services. Please wait for further instructions.`;
     console.log(`User ${userPhoneNumber} pressed invalid digit: ${Digits}.`);
   } else {
     responseMessage += 'No input was detected.';
